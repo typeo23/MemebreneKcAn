@@ -10,15 +10,15 @@ to calculate membrene moduli from nuerical simulations
 
 import numpy as np
 
-class lipid(object):
+class Lipid(object):
     def __init__(self,head,tail):
         self.head = head
         self.tail = tail
-        self.n = tail-head
+        self.dir = tail-head
     def __rpr__(self):
         return "<single lipid, contains head and tail vectors and director>"
 
-class lipid_bilayer(object):
+class Lipid_bilayer(object):
     """ Class which contqins all of the lipid information for a lipid bylayer 
     within a frame. """
     def __init__(self,lipids):
