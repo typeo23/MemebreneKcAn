@@ -4,13 +4,12 @@ Created on Sat Jul 15 20:51:52 2017
 
 @author: itay
 
-Utility functions and class definitions for the main code, used
-to calculate membrene moduli from nuerical simulations
+Objects representing a single lipis and a lipid bilayer
 """
 
 import numpy as np
 
-class Lipid(object):
+class Lipid():
     def __init__(self,head,tail):
         self.head = head
         self.tail = tail
@@ -18,8 +17,8 @@ class Lipid(object):
     def __rpr__(self):
         return "<single lipid, contains head and tail vectors and director>"
 
-class Lipid_bilayer(object):
-    """ Class which contqins all of the lipid information for a lipid bylayer 
+class Lipid_bilayer():
+    """ Class which contains all of the lipid information for a lipid bylayer 
     within a frame. """
     def __init__(self,lipids):
         """ initialize the bilayer with a list of lipids. The mean Z value
