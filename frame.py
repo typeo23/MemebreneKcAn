@@ -38,35 +38,41 @@ class Frame():
             head = []
             tail1 =[]
             tail2 = []
-            head.append(float(self.box_x_file.readline())) 
-            head.append(float(self.box_y_file.readline())) 
-            head.append(float(self.box_z_file.readline())) 
+            head.append(float(self.lipids_x_file.readline())) 
+            head.append(float(self.lipids_y_file.readline())) 
+            head.append(float(self.lipids_z_file.readline())) 
             head = np.array(head)
             
-            tail1.append(float(self.box_x_file.readline()))
-            tail1.append(float(self.box_y_file.readline())) 
-            tail1.append(float(self.box_z_file.readline())) 
-            for i in range(3):
-                if (tail1[i] < 0):
-                    tail1[i] += self.box_size[i]
-                if (tail1[i] >= self.box_size[i]):
-                    tail1[i] -= self.box_size[i]
+#            for i in range(3):
+#                if (head[i] < 0):
+#                    head[i] += self.box_size[i]
+#                if (head[i] >= self.box_size[i]):
+#                    head[i] -= self.box_size[i]
+           
+            tail1.append(float(self.lipids_x_file.readline()))
+            tail1.append(float(self.lipids_y_file.readline())) 
+            tail1.append(float(self.lipids_z_file.readline())) 
+#            for i in range(3):
+#                if (tail1[i] < 0):
+#                    tail1[i] += self.box_size[i]
+#                if (tail1[i] >= self.box_size[i]):
+#                    tail1[i] -= self.box_size[i]
                     
-            tail1=np.array(tail1)
+            tail=np.array(tail1)
             
-            tail2.append(float(self.box_x_file.readline()))
-            tail2.append(float(self.box_y_file.readline())) 
-            tail2.append(float(self.box_z_file.readline())) 
-            
-            for i in range(3):
-                if (tail2[i] < 0):
-                    tail2[i] += self.box_size[i]
-                if (tail2[i] >= self.box_size[i]):
-                    tail2[i] -= self.box_size[i]
-            
-            tail2=np.array(tail2)
-            
-            tail = 0.5*(tail1+tail2)
+#            tail2.append(float(self.lipids_x_file.readline()))
+#            tail2.append(float(self.lipids_y_file.readline())) 
+#            tail2.append(float(self.lipids_z_file.readline())) 
+#            
+#            for i in range(3):
+#                if (tail2[i] < 0):
+#                    tail2[i] += self.box_size[i]
+#                if (tail2[i] >= self.box_size[i]):
+#                    tail2[i] -= self.box_size[i]
+#            
+#            tail2=np.array(tail2)
+#            
+#            tail = 0.5*(tail1+tail2)
             
             bilayer.append(lipid(head,tail))
         
