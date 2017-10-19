@@ -81,18 +81,19 @@ def normalize_grid(grid,M):
     for ind_x in range(M):
         for ind_y in range(M):
             grid[ind_x, ind_y] /= grid[ind_x, ind_y, 2]
-            
-    
+   
+
 def create_grid_qvalues(M, L):
-    """ return a MxM grid (of size L in rela space) of fourier wave vectors q"""  
+    """ return a MxM grid (of size L in rela space) 
+    of fourier wave vectors q"""  
     
     spacing = L[0] / float(M)
 
-    wave_num1 = 2*np.pi*np.fft.fftfreq(M, d=spacing )
-    wave_num2 = 2*np.pi*np.fft.fftfreq(M, d=spacing )
+    wave_num1 = 2*np.pi*np.fft.fftfreq(M, d=spacing)
+    wave_num2 = 2*np.pi*np.fft.fftfreq(M, d=spacing)
 
     # Remove the Nyquist frequencies
-    if ( M % 2 == 0):
+    if (M % 2 == 0):
         wave_num1 = np.delete(wave_num1, M / 2, None)
         wave_num2 = np.delete(wave_num2, M / 2, None)
     else:  # Should not be necessary as  should be even
@@ -109,17 +110,17 @@ def create_grid_qvalues(M, L):
     for i in range(siz1):
         for j in range(siz2):
             w_grid[i, j, 0] = wave_num1[i]
-            w_grid[i,j, 1] = wave_num2[j]
+            w_grid[i, j, 1] = wave_num2[j]
 
     return w_grid
 
-def fourier_trans(n_kl, M, w_grid, L):
+def fourier_trans_grid(grid_val_real, M, L):
     """
-    Calculate the 2D FFT of n_kl.
-    FFTs are carried out separately on the x- and y-components of n_kl. 
+    Calculate the 2D FFT of grid_val_real.
+    FFTs are carried out separately on the x- and y-components of grid_val_real. 
     """
-    n_q1 = np.fft.fft2( n_kl[:,:,0], norm = None )
-    n_q2 = np.fft.fft2( n_kl[:,:,1], norm = None )
+    n_q1 = np.fft.fft2( grid_val_real[:,:,0], norm = None )
+    n_q2 = np.fft.fft2( grid_val_real[:,:,1], norm = None )
 
     # Remove areas of the grids, which correspond to wavenumbers with components corresponding to the Nyquist frequencies    
     if ( M % 2 == 0):
@@ -140,8 +141,8 @@ def fourier_trans(n_kl, M, w_grid, L):
         n_q2 = np.delete(n_q2, (M - 1) / 2, axis = 0)
         n_q2 = np.delete(n_q2, (M - 1) / 2, axis = 1)
 
-    siz1 = len(w_grid[0,:])
-    siz2 = len(w_grid[:,0])
+    siz1 = len(n_q1[0,:])
+    siz2 = len(n_q1[:,0])
 
     n_q = np.zeros((siz1, siz2, 2), dtype=np.complex_)
     n_q[:,:,0] = n_q1
@@ -151,12 +152,12 @@ def fourier_trans(n_kl, M, w_grid, L):
 
 def collect(n_q, w_grid, M,L):
     """
-    Function to calculate the orientation fields of each monolayer, then perform
-    2D FFTs on the data sets. Power spectra are then calculated from the Fourier data and
-    stored in a variable containing the sum of the spectra over all sampled steps
+    Function to calculate the orientation fields of each monolayer, 
+    then perform 2D FFTs on the data sets. Power spectra are then calculated 
+    from the Fourier data and stored in a variable containing the sum of 
+    the spectra over all sampled steps
     """
     
-
     n_q *= (L/(M**2))   # Scaling factor to correct for units and account for grid size dependency
 
     # Transform n_q according to the SI of the 2014 paper by Levine et al. to get the
@@ -187,8 +188,8 @@ def collect(n_q, w_grid, M,L):
 
 def get_moduli( w_grid_av, n_trans_av, n_long_av, plotg = False ):
     """
-    The moduli are determined according to the model by Levine et al., based on spectral
-    analysis of lipid orientations.
+    The moduli are determined according to the model by Levine et al., 
+    based on spectral analysis of lipid orientations.
     """
     k_b = 1.38064852e-23 # Boltzmann constant	
     w_grid_mag = np.linalg.norm(w_grid_av, axis = 2)
