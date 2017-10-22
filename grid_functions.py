@@ -191,7 +191,6 @@ def get_moduli( w_grid_av, n_trans_av, n_long_av, plotg = False ):
     The moduli are determined according to the model by Levine et al., 
     based on spectral analysis of lipid orientations.
     """
-    k_b = 1.38064852e-23 # Boltzmann constant	
     w_grid_mag = np.linalg.norm(w_grid_av, axis = 2)
 
     # First flatten the arrays and remove the q=(0,0) wavenumber values
