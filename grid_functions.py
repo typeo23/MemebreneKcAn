@@ -71,8 +71,8 @@ def create_lipid_grid_closest2(lipids,M,L):
     for k_ind in range(M):
         for l_ind in range(M):
             lipid_list = []
-            for ind_x in range(k_ind-1, k_ind+1):
-                for ind_y in range(l_ind-1, l_ind+1):
+            for ind_x in range(k_ind-3, k_ind+3):
+                for ind_y in range(l_ind-3, l_ind+3):
                     currx = ind_x
                     curry = ind_y
                 
