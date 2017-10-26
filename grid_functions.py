@@ -60,7 +60,7 @@ def get_closest_point(lipds,location,L):
         if (distance_from_gridpoint < min_dist):
             min_dist = distance_from_gridpoint
             closest_lipid = lipid;
-    return lipid
+    return closest_lipid
 
 
 def create_lipid_grid_closest2(lipids,M,L):    
@@ -85,7 +85,7 @@ def create_lipid_grid_closest2(lipids,M,L):
                         curry += M
                     if (curry > M-1):
                         curry -= M
-                    for lipid in lipid_grid[ind_x][ind_y]:
+                    for lipid in lipid_grid[currx][curry]:
                         lipid_list.append(lipid)
             location = np.array([k_ind*L[0]/M, l_ind*L[0]/M])        
             out_grid[k_ind][l_ind] = [get_closest_point(lipid_list,location,L[0])]
