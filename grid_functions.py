@@ -31,6 +31,26 @@ def create_lipid_grid(lipids, M, L):
     return grid
 
 
+def create_lipid_grid_closest(lipds,M,L):
+    """ Create lipid grid using the closest lipid to the gridpoint"""
+    
+    grid = [[[] for i in range(M)] for i in range(M)]
+    closest_grid = np.ones((M,M))*L[0]
+    grid_spacing = L[0]/M
+    for k_ind in range(M):
+        for l_ind in range(M):
+            grid_point = np.array([k_ind*grid_spacing, l_ind*grid_spacing])
+            for lipid in lipds:
+               # print(lipid)
+                lipid_xy = np.array([lipid.tail[0], lipid.tail[1]])
+                distance_from_gridpoint = np.linalg.norm(grid_point - lipid_xy)
+                if (distance_from_gridpoint < closest_grid[k_ind, l_ind]):
+                    closest_grid[k_ind, l_ind] = distance_from_gridpoint
+                    grid[k_ind][l_ind] = [lipid]
+                    
+    return grid
+                
+    
 def create_director_grid(lipid_grid, M, L):
     """ Create a numpy 2d MxM grid of the avrage direcotr from a lipid grid
     Interpulate empty patches
@@ -45,6 +65,7 @@ def create_director_grid(lipid_grid, M, L):
             else:
                 empty_grid_points.append((k_ind, l_ind))
     return interpulate_grid(director_grid,empty_grid_points,M)
+
 
 def calc_director(lipids):
     """ calculaet the avrage director from a list of lipids in a patch """
