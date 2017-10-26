@@ -145,7 +145,8 @@ def interpulate_grid(grid, empty_grid_points,M):
 def normalize_grid(grid,M):
     for ind_x in range(M):
         for ind_y in range(M):
-            grid[ind_x, ind_y] /= grid[ind_x, ind_y, 2]
+            if grid[ind_x, ind_y, 2] != 0:
+                grid[ind_x, ind_y] /= grid[ind_x, ind_y, 2]
    
 
 def create_grid_qvalues(M, L):

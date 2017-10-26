@@ -16,7 +16,7 @@ T=313
 sumcoll =0;
 gridcoll =0;
 test_frame = frame(1024)
-nimber_of_frmes = 1500
+nimber_of_frmes = 1
 M=36
 for i in range(nimber_of_frmes):
     test_frame.load_next_frame()
