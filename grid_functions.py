@@ -51,6 +51,50 @@ def create_lipid_grid_closest(lipds,M,L):
     return grid
                 
     
+def get_closest_point(lipds,location,L):
+    """ return the closest lipid in lipds list to location"""
+    min_dist = L
+    for lipid in lipds:
+        lipid_xy = np.array([lipid.tail[0], lipid.tail[1]])
+        distance_from_gridpoint = np.linalg.norm(location - lipid_xy)
+        if (distance_from_gridpoint < min_dist):
+            min_dist = distance_from_gridpoint
+            closest_lipid = lipid;
+    return lipid
+
+
+def create_lipid_grid_closest2(lipids,M,L):    
+    """ Create lipid grid using the closest lipid to the gridpoint"""
+    
+    lipid_grid = create_lipid_grid(lipids, M, L)
+    out_grid = [[[] for i in range(M)] for i in range(M)]
+    for k_ind in range(M):
+        for l_ind in range(M):
+            lipid_list = []
+            for ind_x in range(k_ind-1, k_ind+1):
+                for ind_y in range(l_ind-1, l_ind+1):
+                    currx = ind_x
+                    curry = ind_y
+                
+                    if (currx <0):
+                        currx += M
+                    if (currx > M-1):
+                        currx -= M
+                    
+                    if (curry <0):
+                        curry += M
+                    if (curry > M-1):
+                        curry -= M
+                    for lipid in lipid_grid[ind_x][ind_y]:
+                        lipid_list.append(lipid)
+            location = np.array([k_ind*L[0]/M, l_ind*L[0]/M])        
+            out_grid[k_ind][l_ind] = [get_closest_point(lipid_list,location,L[0])]
+    return out_grid
+            
+    
+    
+    
+    
 def create_director_grid(lipid_grid, M, L):
     """ Create a numpy 2d MxM grid of the avrage direcotr from a lipid grid
     Interpulate empty patches
