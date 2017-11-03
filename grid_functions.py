@@ -19,6 +19,7 @@ def create_lipid_grid(lipids, M, L):
         gridY = lipid.tail[1]/float(dLy)
         k_ind = int(np.floor(gridX))
         l_ind = int(np.floor(gridY))
+        " Preiodic boudary conditions"
         if (k_ind < 0):
             k_ind += M
         if (k_ind >=M):
@@ -31,24 +32,6 @@ def create_lipid_grid(lipids, M, L):
     return grid
 
 
-def create_lipid_grid_closest(lipds,M,L):
-    """ Create lipid grid using the closest lipid to the gridpoint"""
-    
-    grid = [[[] for i in range(M)] for i in range(M)]
-    closest_grid = np.ones((M,M))*L[0]
-    grid_spacing = L[0]/M
-    for k_ind in range(M):
-        for l_ind in range(M):
-            grid_point = np.array([k_ind*grid_spacing, l_ind*grid_spacing])
-            for lipid in lipds:
-               # print(lipid)
-                lipid_xy = np.array([lipid.tail[0], lipid.tail[1]])
-                distance_from_gridpoint = np.linalg.norm(grid_point - lipid_xy)
-                if (distance_from_gridpoint < closest_grid[k_ind, l_ind]):
-                    closest_grid[k_ind, l_ind] = distance_from_gridpoint
-                    grid[k_ind][l_ind] = [lipid]
-                    
-    return grid
                 
     
 def get_closest_point(lipds,location,L):
@@ -63,16 +46,18 @@ def get_closest_point(lipds,location,L):
     return closest_lipid
 
 
-def create_lipid_grid_closest2(lipids,M,L):    
-    """ Create lipid grid using the closest lipid to the gridpoint"""
+def create_lipid_grid_closest2(lipids,M,L,n):    
+    """ Create MxM lipid grid using the closest lipid to the gridpoint
+    Accelareted by grdding the lipids and only scanning n surronding blocks"""
     
     lipid_grid = create_lipid_grid(lipids, M, L)
     out_grid = [[[] for i in range(M)] for i in range(M)]
     for k_ind in range(M):
         for l_ind in range(M):
             lipid_list = []
-            for ind_x in range(k_ind-3, k_ind+3):
-                for ind_y in range(l_ind-3, l_ind+3):
+            # creates a list of the lipids in the n surrounding blocks
+            for ind_x in range(k_ind-n, k_ind+n):
+                for ind_y in range(l_ind-n, l_ind+n):
                     currx = ind_x
                     curry = ind_y
                 
@@ -87,8 +72,10 @@ def create_lipid_grid_closest2(lipids,M,L):
                         curry -= M
                     for lipid in lipid_grid[currx][curry]:
                         lipid_list.append(lipid)
+            # now get the colsest one
             location = np.array([k_ind*L[0]/M, l_ind*L[0]/M])        
-            out_grid[k_ind][l_ind] = [get_closest_point(lipid_list,location,L[0])]
+            out_grid[k_ind][l_ind] = [get_closest_point(lipid_list,
+                                                        location,L[0])]
     return out_grid
             
     
@@ -126,7 +113,7 @@ def interpulate_grid(grid, empty_grid_points,M):
             for ind_y in range(empty_point[1]-1, empty_point[1]+1):
                 currx = ind_x
                 curry = ind_y
-                
+                # periodic boundary conditions
                 if (currx <0):
                     currx += M
                 if (currx > M-1):
@@ -150,7 +137,7 @@ def normalize_grid(grid,M):
    
 
 def create_grid_qvalues(M, L):
-    """ return a MxM grid (of size L in rela space) 
+    """ return a MxM grid (of size L in real space) 
     of fourier wave vectors q"""  
     
     spacing = L[0] / float(M)
@@ -188,7 +175,8 @@ def fourier_trans_grid(grid_val_real, M, L):
     n_q1 = np.fft.fft2( grid_val_real[:,:,0], norm = None )
     n_q2 = np.fft.fft2( grid_val_real[:,:,1], norm = None )
 
-    # Remove areas of the grids, which correspond to wavenumbers with components corresponding to the Nyquist frequencies    
+    # Remove areas of the grids, which correspond to wavenumbers with 
+    #components corresponding to the Nyquist frequencies    
     if ( M % 2 == 0):
         n_q1 = np.delete(n_q1, M / 2, axis = 0)
         n_q1 = np.delete(n_q1, M / 2, axis = 1)
@@ -226,8 +214,8 @@ def collect(n_q, w_grid, M,L):
     
     n_q *= (L/(M**2))   # Scaling factor to correct for units and account for grid size dependency
 
-    # Transform n_q according to the SI of the 2014 paper by Levine et al. to get the
-    # longitudinal and transverse components of the bilayer orientation fields
+    # DFT for  the field, and seperate the longitodenal 
+    #and transverse components
     siz1 = w_grid[:, 0, 0].size
     siz2 = w_grid[0, :, 0].size
     q_matrix = np.zeros((2, 2))
@@ -252,10 +240,10 @@ def collect(n_q, w_grid, M,L):
     w_grid_sum =  w_grid
     return n_pow_sum, w_grid_sum
 
-def get_moduli( w_grid_av, n_trans_av, n_long_av, plotg = False ):
+def get_moduli(w_grid_av, n_trans_av, n_long_av):
     """
-    The moduli are determined according to the model by Levine et al., 
-    based on spectral analysis of lipid orientations.
+    return a flattened set of unique wavenumbers and the corresponding grid 
+    values for the longitudenal and transverse components
     """
     w_grid_mag = np.linalg.norm(w_grid_av, axis = 2)
 
@@ -275,16 +263,19 @@ def get_moduli( w_grid_av, n_trans_av, n_long_av, plotg = False ):
 
     # Take the average of the data for each unique wavenumber
 
-    # Returns the unique wavenumber and the indices of the first element containing each unique wavenumber
+    # Returns the unique wavenumber and the indices of the first 
+    #element containing each unique wavenumber
     sorted_wavnum_u, unique_ind = np.unique(sorted_wavnum, return_index=True)
     cnt = 0
     n_trans_u = np.zeros(sorted_wavnum_u.size)
     n_long_u = np.zeros(sorted_wavnum_u.size)
     for index in unique_ind:
-        # Get boolean array of elements in which true elements correspond to the unique wavenumber
+        # Get boolean array of elements in which true elements correspond 
+        #to the unique wavenumber
         condlist = (sorted_wavnum == sorted_wavnum[index])
 
-        # Get all n_trans/n_long with a given unique wavenumber and calc their average values
+        # Get all n_trans/n_long with a given unique wavenumber and 
+        #calc their average values
         n_trans = np.compress(condlist, sorted_n_trans)
         n_trans_u[cnt] = np.mean(n_trans)
 
@@ -298,10 +289,6 @@ def get_moduli( w_grid_av, n_trans_av, n_long_av, plotg = False ):
     n_long_u *= 0.01       # Angstrom^2  -> nm^2
     n_trans_u *= 0.01      # Angstrom^2  -> nm^2
 
-    q_long_sq = np.square(sorted_wavnum_u)*n_long_u
-
-    
-    
 
     return sorted_wavnum_u, n_long_u, n_trans_u
 
