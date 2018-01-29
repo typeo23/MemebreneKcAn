@@ -74,7 +74,11 @@ class Frame():
 #            
 #            tail = 0.5*(tail1+tail2)
             
-            bilayer.append(lipid(head,tail))
+            """ Trying to filter high angle lipids """
+            dirc = head-tail;
+            dirc /= np.linalg.norm(dirc);
+            if (np.fabs(dirc[2]) > 0.2):
+                bilayer.append(lipid(head,tail))
         
         self.bilayer = lipids(bilayer)
             

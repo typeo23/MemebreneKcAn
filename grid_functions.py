@@ -46,7 +46,7 @@ def get_closest_point(lipds,location,L):
     return closest_lipid
 
 
-def create_lipid_grid_closest2(lipids,M,L,n):    
+def create_lipid_grid_closest2(lipids,M,L,n,pool):    
     """ Create MxM lipid grid using the closest lipid to the gridpoint
     Accelareted by grdding the lipids and only scanning n surronding blocks"""
     
@@ -134,7 +134,7 @@ def normalize_grid(grid,M):
         for ind_y in range(M):
             if grid[ind_x, ind_y, 2] != 0:
                 grid[ind_x, ind_y] /= grid[ind_x, ind_y, 2]
-   
+                #grid[ind_x, ind_y]  /= np.linalg.norm(grid[ind_x, ind_y]);
 
 def create_grid_qvalues(M, L):
     """ return a MxM grid (of size L in real space) 

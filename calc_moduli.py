@@ -15,17 +15,17 @@ k_b = 1.38064852e-23 # Boltzmann constant
 T=313
 sumcoll =0;
 gridcoll =0;
-test_frame = frame(1024)
-nimber_of_frmes = 1
-M=36
+test_frame = frame(512)
+nimber_of_frmes = 200
+M=12
 for i in range(nimber_of_frmes):
     test_frame.load_next_frame()
    
-    lipid_grid = gf.create_lipid_grid_closest2(test_frame.bilayer.upper,M, 
+    lipid_grid = gf.create_lipid_grid(test_frame.bilayer.upper,M, 
                                   test_frame.box_size)
     director_grid = gf.create_director_grid(lipid_grid,M, 
                                             test_frame.box_size)
-    lipid_grid2 = gf.create_lipid_grid_closest2(test_frame.bilayer.lower,M, 
+    lipid_grid2 = gf.create_lipid_grid(test_frame.bilayer.lower,M, 
                                   test_frame.box_size)
     director_grid2 = gf.create_director_grid(lipid_grid2,M, 
                                              test_frame.box_size)
