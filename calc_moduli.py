@@ -16,8 +16,8 @@ T=313
 sumcoll =0;
 gridcoll =0;
 test_frame = frame(512)
-nimber_of_frmes = 200
-M=12
+nimber_of_frmes = 2
+M=90
 for i in range(nimber_of_frmes):
     test_frame.load_next_frame()
    
@@ -36,6 +36,7 @@ for i in range(nimber_of_frmes):
     n_pow_sum, w_grid_sum = gf.collect(n_q,q_grid,M,test_frame.box_size[0])
     sumcoll += n_pow_sum/nimber_of_frmes
     gridcoll += w_grid_sum/nimber_of_frmes
+    print ("\r" + "{0:.5f}".format(100*(i/nimber_of_frmes)) + "% done \r",end="")
 
 
 sorted_wavenum_u, n_long_u, n_trans_u = gf.get_moduli(gridcoll,sumcoll[:,:,0],sumcoll[:,:,1])
@@ -43,4 +44,4 @@ plt.plot(sorted_wavenum_u,sorted_wavenum_u*sorted_wavenum_u*n_trans_u)
 K_C = np.square(sorted_wavenum_u)*n_trans_u
 K_C = k_b*T/np.mean(K_C[0:2])
 print('Kc = ',K_C)
-plt.show()
+#plt.show()

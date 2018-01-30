@@ -108,6 +108,7 @@ def calc_director(lipids):
     return av_director
 
 def interpulate_grid(grid, empty_grid_points,M):
+    interpulate_grid2 (grid,M)
     for empty_point in empty_grid_points:
         for ind_x in range(empty_point[0]-1, empty_point[0]+1):
             for ind_y in range(empty_point[1]-1, empty_point[1]+1):
@@ -128,6 +129,20 @@ def interpulate_grid(grid, empty_grid_points,M):
         grid[empty_point] /= 8
     return grid
 
+def interpulate_grid2 (grid,M):
+    """ Interpulates the grid with arbitrary missing points"""
+    non_zero_indices =np.nonzero(grid[:,:,0])
+    non_zero_vals = grid[np.nonzero(grid)]
+    non_zero_vals = np.reshape(non_zero_vals ,
+                               (int(non_zero_indices[0].size),3))
+    x_grid_ind = non_zero_indices[0]
+    y_grid_ind = non_zero_indices[1]
+    
+    x_val = non_zero_vals[:,0]
+    y_val = non_zero_vals[:,1]
+    z_val = non_zero_vals[:,2]
+    
+    print(0)
 
 def normalize_grid(grid,M):
     for ind_x in range(M):
@@ -226,8 +241,8 @@ def collect(n_q, w_grid, M,L):
                 q_v = w_grid[i, j, :]
                 n_v = n_q[i, j, :]
 
-                q = np.linalg.norm( q_v ) # Magnitude of wavenumber
-
+                #q = np.linalg.norm( q_v ) # Magnitude of wavenumber
+                q = np.sqrt(q_v[0]**2 + q_v[1]**2)
                 q_matrix[0,:] = q_v
                 q_matrix[1,0] = - q_v[1]
                 q_matrix[1,1] = q_v[0]
