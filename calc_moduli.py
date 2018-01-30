@@ -15,9 +15,9 @@ k_b = 1.38064852e-23 # Boltzmann constant
 T=313
 sumcoll =0;
 gridcoll =0;
-test_frame = frame(512)
-nimber_of_frmes = 2
-M=90
+test_frame = frame(4096)
+nimber_of_frmes = 2000
+M=42
 for i in range(nimber_of_frmes):
     test_frame.load_next_frame()
    
@@ -40,8 +40,8 @@ for i in range(nimber_of_frmes):
 
 
 sorted_wavenum_u, n_long_u, n_trans_u = gf.get_moduli(gridcoll,sumcoll[:,:,0],sumcoll[:,:,1])
-plt.plot(sorted_wavenum_u,sorted_wavenum_u*sorted_wavenum_u*n_trans_u)
+plt.plot(sorted_wavenum_u,n_long_u)
 K_C = np.square(sorted_wavenum_u)*n_trans_u
 K_C = k_b*T/np.mean(K_C[0:2])
 print('Kc = ',K_C)
-#plt.show()
+plt.show()

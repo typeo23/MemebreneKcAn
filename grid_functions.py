@@ -7,6 +7,8 @@ Created on Thu Oct 12 10:55:19 2017
 Utilitie functions for creating a grid from lipid list and interpulating
 """
 import numpy as np
+from scipy import interpolate
+from scipy.interpolate import griddata
 
 
 def create_lipid_grid(lipids, M, L):
@@ -15,8 +17,8 @@ def create_lipid_grid(lipids, M, L):
     dLx = L[0]/float(M)
     dLy = L[1]/float(M)
     for lipid in lipids:
-        gridX = lipid.tail[0]/float(dLx)
-        gridY = lipid.tail[1]/float(dLy)
+        gridX = lipid.head[0]/float(dLx)
+        gridY = lipid.head[1]/float(dLy)
         k_ind = int(np.floor(gridX))
         l_ind = int(np.floor(gridY))
         " Preiodic boudary conditions"
@@ -95,7 +97,9 @@ def create_director_grid(lipid_grid, M, L):
                 director_grid[k_ind][l_ind][:] = calc_director(lipid_grid[k_ind][l_ind])
             else:
                 empty_grid_points.append((k_ind, l_ind))
-    return interpulate_grid(director_grid,empty_grid_points,M)
+    #return interpulate_grid(director_grid,empty_grid_points,M)
+    return interpulate_grid2(director_grid,M)
+
 
 
 def calc_director(lipids):
@@ -131,8 +135,8 @@ def interpulate_grid(grid, empty_grid_points,M):
 
 def interpulate_grid2 (grid,M):
     """ Interpulates the grid with arbitrary missing points"""
-    non_zero_indices =np.nonzero(grid[:,:,0])
-    non_zero_vals = grid[np.nonzero(grid)]
+    non_zero_indices =np.nonzero(grid[:,:,2])
+    non_zero_vals = grid[np.nonzero(grid[:,:,2])]
     non_zero_vals = np.reshape(non_zero_vals ,
                                (int(non_zero_indices[0].size),3))
     x_grid_ind = non_zero_indices[0]
@@ -142,7 +146,19 @@ def interpulate_grid2 (grid,M):
     y_val = non_zero_vals[:,1]
     z_val = non_zero_vals[:,2]
     
-    print(0)
+    grid_x, grid_y = np.mgrid[0:M, 0:M]
+    
+    grid_x_int = griddata(non_zero_indices, x_val, 
+                          (grid_x,grid_y), fill_value=0,method='cubic')
+    
+    grid_y_int = griddata(non_zero_indices, y_val, 
+                          (grid_x,grid_y), fill_value=0,method='cubic')
+    
+    grid_z_int = griddata(non_zero_indices, z_val, 
+                          (grid_x,grid_y), fill_value=0,method='cubic')
+    grid_int = np.dstack((grid_x_int,grid_y_int,grid_z_int))
+   
+    return (grid_int)
 
 def normalize_grid(grid,M):
     for ind_x in range(M):
