@@ -97,8 +97,8 @@ def create_director_grid(lipid_grid, M, L):
                 director_grid[k_ind][l_ind][:] = calc_director(lipid_grid[k_ind][l_ind])
             else:
                 empty_grid_points.append((k_ind, l_ind))
-    #return interpulate_grid(director_grid,empty_grid_points,M)
-    return interpulate_grid2(director_grid,M)
+    return interpulate_grid2(director_grid,empty_grid_points,M)
+    #return interpulate_grid2(director_grid,M)
 
 
 
@@ -112,7 +112,6 @@ def calc_director(lipids):
     return av_director
 
 def interpulate_grid(grid, empty_grid_points,M):
-    interpulate_grid2 (grid,M)
     for empty_point in empty_grid_points:
         for ind_x in range(empty_point[0]-1, empty_point[0]+1):
             for ind_y in range(empty_point[1]-1, empty_point[1]+1):
@@ -133,7 +132,7 @@ def interpulate_grid(grid, empty_grid_points,M):
         grid[empty_point] /= 8
     return grid
 
-def interpulate_grid2 (grid,M):
+def interpulate_grid2 (grid,empty_grid_points,M):
     """ Interpulates the grid with arbitrary missing points"""
     non_zero_indices =np.nonzero(grid[:,:,2])
     non_zero_vals = grid[np.nonzero(grid[:,:,2])]
@@ -158,6 +157,9 @@ def interpulate_grid2 (grid,M):
                           (grid_x,grid_y), fill_value=0,method='cubic')
     grid_int = np.dstack((grid_x_int,grid_y_int,grid_z_int))
    
+    grid2=interpulate_grid(grid, empty_grid_points,M) 
+    bb = np.multiply(grid==0,grid2)
+   # print(0)
     return (grid_int)
 
 def normalize_grid(grid,M):
