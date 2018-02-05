@@ -38,9 +38,11 @@ class Lipid_bilayer():
     def devide_layers(self):
         for lipid in self.lipids:
             if(lipid.head[2] > self.mean_z):
-                self.upper.append(lipid)
+                if(lipid.head[2]-lipid.tail[2] > 0):
+                    self.upper.append(lipid)
             else:
-                self.lower.append(lipid)
+                if (lipid.head[2]-lipid.tail[2] < 0):
+                    self.lower.append(lipid)
     def __repr__(self):
         st = "<lipid bilayer containig %d lipids>" % len(self.lipids)
         return st 

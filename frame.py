@@ -76,9 +76,9 @@ class Frame():
             
             """ Trying to filter high angle lipids """
             dirc = head-tail;
-            #dirc /= np.linalg.norm(dirc);
-            dirc /= np.sqrt(dirc[0]**2 + dirc[1]**2 + dirc[2]**2)
-            if (np.fabs(dirc[2]) > 0.2):
+            dirc /= np.linalg.norm(dirc);
+            #dirc /= np.sqrt(dirc[0]**2 + dirc[1]**2 + dirc[2]**2)
+            if (np.fabs(dirc[2]) > 0.6):
                 bilayer.append(lipid(head,tail))
         
         self.bilayer = lipids(bilayer)

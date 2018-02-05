@@ -30,6 +30,7 @@ def create_lipid_grid(lipids, M, L):
             l_ind += M
         if (l_ind >= M):
             l_ind -= M
+        direc = lipid.head - lipid.tail
         grid[k_ind][l_ind].append(lipid)
     return grid
 
@@ -97,8 +98,9 @@ def create_director_grid(lipid_grid, M, L):
                 director_grid[k_ind][l_ind][:] = calc_director(lipid_grid[k_ind][l_ind])
             else:
                 empty_grid_points.append((k_ind, l_ind))
-    return interpulate_grid2(director_grid,empty_grid_points,M)
-    #return interpulate_grid2(director_grid,M)
+    return interpulate_grid(director_grid,empty_grid_points,M)
+#    return interpulate_grid2(director_grid,M)
+    #return director_grid
 
 
 
