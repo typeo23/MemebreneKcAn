@@ -12,9 +12,9 @@ from Lipid_bilayer  import Lipid_bilayer as lipids
 from Lipid_bilayer  import Lipid as lipid
 
 class Frame():
-    def __init__(self,lipids_number,lipidx='lipidX.out',
-                 lipidy='lipidY.out',lipidz='lipidZ.out'
-                 ,boxx='boxSizeX.out',boxy='boxSizeY.out',boxz='boxSizeZ.out'):
+    def __init__(self,lipids_number,lipidx='LipidX.out',
+                 lipidy='LipidY.out',lipidz='LipidZ.out'
+                 ,boxx='boxsizeX.out',boxy='boxsizeY.out',boxz='boxsizeZ.out'):
         """ Initialize a frame containing a lipid bilayer and box dimentions 
         will be loaded from the files lipidx,y,z and box dimentiond will be 
         loaded from boxx,y,z """
