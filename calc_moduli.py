@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from frame import Frame as frame
 import grid_functions as gf
 import numpy as np
-import numpy, scipy.io
+import scipy.io
 
 k_b = 1.38064852e-23 # Boltzmann constant	
 T=313
