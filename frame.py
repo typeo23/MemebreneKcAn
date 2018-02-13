@@ -34,6 +34,7 @@ class Frame():
         self.box_size.append(float(self.box_y_file.readline()))
         self.box_size.append(float(self.box_z_file.readline()))
         
+        
         for lipid_num in range(self.lipids_number):
             head = []
             tail1 =[]
