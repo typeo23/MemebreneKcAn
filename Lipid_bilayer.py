@@ -24,17 +24,18 @@ class Lipid_bilayer():
         """ initialize the bilayer with a list of lipids. The mean Z value
         is calculated and the lipids are assigned to up and down layers"""
         self.lipids = lipids
-        self.mean_z = 0;
+        self.mean_z =  np.mean([lipid.head[2]
+                               for lipid in lipids])
         self.upper = [];
         self.lower=[];
-        self.calc_mean_z()
         self.devide_layers()
-    def calc_mean_z(self):
-        """ claculate mean Z value of the lipids head. Used to devide the lipid system 
-        to upper and lower layer"""
-        for lipid in self.lipids:
-            self.mean_z += lipid.head[2]
-        self.mean_z /= len(self.lipids)
+        self.mean_z_upper =  np.mean([lipid.head[2]
+                                    for lipid in self.upper])
+        self.mean_z_lower =  np.mean([lipid.head[2]
+                                    for lipid in self.lower])
+       
+    
+    
     def devide_layers(self):
         for lipid in self.lipids:
             if(lipid.head[2] > self.mean_z):

@@ -83,4 +83,5 @@ class Frame():
                 bilayer.append(lipid(head,tail))
         
         self.bilayer = lipids(bilayer)
+       
             

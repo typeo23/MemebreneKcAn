@@ -32,6 +32,8 @@ def clac_moduli(params):
     dir_all = np.zeros((M,M,3,number_of_blocks)) #array conating all the direcotr grids
     n_long=[] #lonitual director componants spectra
     n_trans=[] #tansverse director component spectra
+    n_long_com=[]
+    n_trans_com =[]
     s_wavenum = [] #flattned wavenumbers
     
     # Begin the main loop on the number of blocks
@@ -47,6 +49,9 @@ def clac_moduli(params):
             if (i==0):
                 box_size = test_frame.box_size
            
+            # producing wave number(q) values for the grid
+            q_grid = gf.create_grid_qvalues(M,box_size)
+            
             # Grdding the directors from the upper leadlet
             lipid_grid_upper = gf.create_lipid_grid(test_frame.bilayer.upper,M, 
                                           test_frame.box_size)
@@ -64,21 +69,24 @@ def clac_moduli(params):
             
             #Nomalizing the directos field (to Z=1)
             gf.normalize_grid(director_grid_av,M)
-            # producing wave number(q) values for the grid
-            q_grid = gf.create_grid_qvalues(M,box_size)
-            n_q=gf.fourier_trans_grid(director_grid_av,M,test_frame.box_size[0] )
+            
+            n_q=gf.fourier_trans_grid(director_grid_av,M,test_frame.box_size[0])
             #collecting the spectra
-            n_pow_sum, w_grid_sum = gf.collect(n_q,q_grid,M,box_size[0])
+            n_pow_sum, w_grid_sum, n_comp = gf.collect(n_q,q_grid,M,box_size[0])
             sumcoll = n_pow_sum #/frames_per_block
             gridcoll = w_grid_sum #/frames_per_block
             # and a 1D array containing the q values and correspondant logitudenal/
             # Transverse componants of the director field
-            sorted_wavenum_u, n_long_u, n_trans_u = (
-                    gf.get_moduli(gridcoll,sumcoll[:,:,0],sumcoll[:,:,1]))
+            sorted_wavenum_u, n_long_u, n_trans_u, n_long_c, n_trans_c = (
+                    gf.get_moduli(gridcoll,sumcoll[:,:,0],sumcoll[:,:,1],
+                                  n_comp[:,:,0], n_comp[:,:,1]))
             n_long.append(n_long_u)
             n_trans.append(n_trans_u)
+            n_long_com.append(n_long_c)
+            n_trans_com.append(n_trans_c)
             s_wavenum.append(sorted_wavenum_u)
-            print ("\r" + "{0:.5f}".format(100*(i/frames_per_block)) + "% done \r",end="")
+            print ("\r" + "{0:.5f}".format(100*(i/frames_per_block)) 
+                   + "% done \r",end="")
 #        dir_all[:,:,:,block] = director_grid3
 #        n_long.append(n_long_u)
 #        n_trans.append(n_trans_u)
@@ -96,6 +104,8 @@ def clac_moduli(params):
     #creating and saving pandas dataframe
     trans = np.array(n_trans)
     long = np.array(n_long)
+    long_c = np.array(n_long_com)
+    trans_c = np.array(n_trans_com)
     
     pd_trans = pd.DataFrame(trans, columns= s_wavenum[0])
     pd_long = pd.DataFrame(long, columns= s_wavenum[0])
@@ -105,6 +115,9 @@ def clac_moduli(params):
     # Saving csv files
     np.savetxt('trans.csv',trans, delimiter = ',')
     np.savetxt('long.csv', long, delimiter=',')
+    np.save('trans_c.csv',trans_c)
+    np.save('long_c.csv', long_c)
+    
     np.savetxt('wavenum.csv', s_wavenum[0], delimiter=',')
      
     
@@ -113,7 +126,10 @@ def clac_moduli(params):
         K_C_tmp = np.square(s_wavenum[i])*n_trans[i]
         K_C_all[i] = k_b*T/np.mean(K_C_tmp[0:2])
     
-    sorted_wavenum_u, n_long_u, n_trans_u = gf.get_moduli(gridcoll,sumcoll[:,:,0],sumcoll[:,:,1])
+    sorted_wavenum_u, n_long_u, n_trans_u, nlc, ntc = gf.get_moduli(
+                                            gridcoll,sumcoll[:,:,0],
+                                            sumcoll[:,:,1],
+                                            n_comp[:,:,0], n_comp[:,:,1])
     plt.plot(sorted_wavenum_u,n_long_u)
     K_C = np.square(sorted_wavenum_u)*n_trans_u
     K_C = k_b*T/np.mean(K_C[0:2])
