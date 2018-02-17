@@ -37,51 +37,55 @@ def create_lipid_grid(lipids, M, L):
 
                 
     
-def get_closest_point(lipds,location,L):
-    """ return the closest lipid in lipds list to location"""
-    min_dist = L
-    for lipid in lipds:
-        lipid_xy = np.array([lipid.tail[0], lipid.tail[1]])
-        distance_from_gridpoint = np.linalg.norm(location - lipid_xy)
-        if (distance_from_gridpoint < min_dist):
-            min_dist = distance_from_gridpoint
-            closest_lipid = lipid;
-    return closest_lipid
-
-
-def create_lipid_grid_closest2(lipids,M,L,n,pool):    
-    """ Create MxM lipid grid using the closest lipid to the gridpoint
-    Accelareted by grdding the lipids and only scanning n surronding blocks"""
-    
-    lipid_grid = create_lipid_grid(lipids, M, L)
-    out_grid = [[[] for i in range(M)] for i in range(M)]
-    for k_ind in range(M):
-        for l_ind in range(M):
-            lipid_list = []
-            # creates a list of the lipids in the n surrounding blocks
-            for ind_x in range(k_ind-n, k_ind+n):
-                for ind_y in range(l_ind-n, l_ind+n):
-                    currx = ind_x
-                    curry = ind_y
-                
-                    if (currx <0):
-                        currx += M
-                    if (currx > M-1):
-                        currx -= M
-                    
-                    if (curry <0):
-                        curry += M
-                    if (curry > M-1):
-                        curry -= M
-                    for lipid in lipid_grid[currx][curry]:
-                        lipid_list.append(lipid)
-            # now get the colsest one
-            location = np.array([k_ind*L[0]/M, l_ind*L[0]/M])        
-            out_grid[k_ind][l_ind] = [get_closest_point(lipid_list,
-                                                        location,L[0])]
-    return out_grid
-            
-    
+# =============================================================================
+# ===Commented for now, will be removed if we decide not to use closest point==
+#    
+# def get_closest_point(lipds,location,L):
+#     """ return the closest lipid in lipds list to location"""
+#     min_dist = L
+#     for lipid in lipds:
+#         lipid_xy = np.array([lipid.tail[0], lipid.tail[1]])
+#         distance_from_gridpoint = np.linalg.norm(location - lipid_xy)
+#         if (distance_from_gridpoint < min_dist):
+#             min_dist = distance_from_gridpoint
+#             closest_lipid = lipid;
+#     return closest_lipid
+# 
+# 
+# def create_lipid_grid_closest2(lipids,M,L,n,pool):    
+#     """ Create MxM lipid grid using the closest lipid to the gridpoint
+#     Accelareted by grdding the lipids and only scanning n surronding blocks"""
+#     
+#     lipid_grid = create_lipid_grid(lipids, M, L)
+#     out_grid = [[[] for i in range(M)] for i in range(M)]
+#     for k_ind in range(M):
+#         for l_ind in range(M):
+#             lipid_list = []
+#             # creates a list of the lipids in the n surrounding blocks
+#             for ind_x in range(k_ind-n, k_ind+n):
+#                 for ind_y in range(l_ind-n, l_ind+n):
+#                     currx = ind_x
+#                     curry = ind_y
+#                 
+#                     if (currx <0):
+#                         currx += M
+#                     if (currx > M-1):
+#                         currx -= M
+#                     
+#                     if (curry <0):
+#                         curry += M
+#                     if (curry > M-1):
+#                         curry -= M
+#                     for lipid in lipid_grid[currx][curry]:
+#                         lipid_list.append(lipid)
+#             # now get the colsest one
+#             location = np.array([k_ind*L[0]/M, l_ind*L[0]/M])        
+#             out_grid[k_ind][l_ind] = [get_closest_point(lipid_list,
+#                                                         location,L[0])]
+#     return out_grid
+#             
+#     
+# =============================================================================
     
     
     
@@ -99,8 +103,7 @@ def create_director_grid(lipid_grid, M, L):
             else:
                 empty_grid_points.append((k_ind, l_ind))
     return interpulate_grid(director_grid,empty_grid_points,M)
-#    return interpulate_grid2(director_grid,M)
-    #return director_grid
+
 
 
 
@@ -114,6 +117,11 @@ def calc_director(lipids):
     return av_director
 
 def create_normal_grid(lipid_grid, M, L, z_mean, q_grid):
+    """ Calculets the Normal field from the lipid_grid, z_mean is the mean
+    height if the lipid heads. q_grid is a grid of the corresponding grid 
+    wavenumbers
+    //TODO: if we decide to keep it condier refactoring to all grid avraging 
+    functions """
     #first calculate the hight field
     empty_grid_points =[]
     height_grid = np.zeros((M,M))
@@ -132,6 +140,8 @@ def create_normal_grid(lipid_grid, M, L, z_mean, q_grid):
                 
                 
 def interpulate_grid(grid, empty_grid_points,M):
+    """ bi-linear interpulation for emty grid points. Assumes there are no
+    two adjucnt empty patches"""
     for empty_point in empty_grid_points:
         for ind_x in range(empty_point[0]-1, empty_point[0]+1):
             for ind_y in range(empty_point[1]-1, empty_point[1]+1):
@@ -168,26 +178,26 @@ def interpulate_grid2 (grid,empty_grid_points,M):
     grid_x, grid_y = np.mgrid[0:M, 0:M]
     
     grid_x_int = griddata(non_zero_indices, x_val, 
-                          (grid_x,grid_y), fill_value=0,method='cubic')
+                          (grid_x,grid_y), fill_value=0,method='linear')
     
     grid_y_int = griddata(non_zero_indices, y_val, 
-                          (grid_x,grid_y), fill_value=0,method='cubic')
+                          (grid_x,grid_y), fill_value=0,method='linear')
     
     grid_z_int = griddata(non_zero_indices, z_val, 
-                          (grid_x,grid_y), fill_value=0,method='cubic')
+                          (grid_x,grid_y), fill_value=0,method='linear')
     grid_int = np.dstack((grid_x_int,grid_y_int,grid_z_int))
    
     grid2=interpulate_grid(grid, empty_grid_points,M) 
     bb = np.multiply(grid==0,grid2)
-   # print(0)
     return (grid_int)
 
 def normalize_grid(grid,M):
+    """  "Nomalize" the vector values at each gridpoint, such that Z=1"""
     for ind_x in range(M):
         for ind_y in range(M):
             if grid[ind_x, ind_y, 2] != 0:
                 grid[ind_x, ind_y] /= grid[ind_x, ind_y, 2]
-                #grid[ind_x, ind_y]  /= np.linalg.norm(grid[ind_x, ind_y]);
+                
 
 def create_grid_qvalues(M, L):
     """ return a MxM grid (of size L in real space) 
@@ -223,7 +233,8 @@ def create_grid_qvalues(M, L):
 def fourier_trans_grid(grid_val_real, M, L):
     """
     Calculate the 2D FFT of grid_val_real.
-    FFTs are carried out separately on the x- and y-components of grid_val_real. 
+    FFTs are carried out separately on the x- and y-components 
+    of grid_val_real. Also remove the Nyquist components as they diverge
     """
     n_q1 = np.fft.fft2( grid_val_real[:,:,0], norm = None )
     n_q2 = np.fft.fft2( grid_val_real[:,:,1], norm = None )

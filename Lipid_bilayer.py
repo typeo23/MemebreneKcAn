@@ -37,6 +37,8 @@ class Lipid_bilayer():
     
     
     def devide_layers(self):
+        """ Devide the lipids into two leaflets according the mean Z value of
+        all the lipids """
         for lipid in self.lipids:
             if(lipid.head[2] > self.mean_z):
                 if(lipid.head[2]-lipid.tail[2] > 0):

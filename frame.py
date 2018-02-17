@@ -27,7 +27,7 @@ class Frame():
         self.box_z_file = open(boxz,'r')
         
     def load_next_frame(self):
-        """ read the next frame of lipi bilayer """
+        """ read the next frame of lipids from the file  """
         bilayer = [];
         self.box_size =[]
         self.box_size.append(float(self.box_x_file.readline()))
@@ -44,44 +44,30 @@ class Frame():
             head.append(float(self.lipids_z_file.readline())) 
             head = np.array(head)
             
-#            for i in range(3):
-#                if (head[i] < 0):
-#                    head[i] += self.box_size[i]
-#                if (head[i] >= self.box_size[i]):
-#                    head[i] -= self.box_size[i]
+#           
            
             tail1.append(float(self.lipids_x_file.readline()))
             tail1.append(float(self.lipids_y_file.readline())) 
             tail1.append(float(self.lipids_z_file.readline())) 
-#            for i in range(3):
-#                if (tail1[i] < 0):
-#                    tail1[i] += self.box_size[i]
-#                if (tail1[i] >= self.box_size[i]):
-#                    tail1[i] -= self.box_size[i]
+#            
                     
             tail=np.array(tail1)
             
-#            tail2.append(float(self.lipids_x_file.readline()))
-#            tail2.append(float(self.lipids_y_file.readline())) 
-#            tail2.append(float(self.lipids_z_file.readline())) 
-#            
-#            for i in range(3):
-#                if (tail2[i] < 0):
-#                    tail2[i] += self.box_size[i]
-#                if (tail2[i] >= self.box_size[i]):
-#                    tail2[i] -= self.box_size[i]
-#            
-#            tail2=np.array(tail2)
-#            
-#            tail = 0.5*(tail1+tail2)
             
-            """ Trying to filter high angle lipids """
+            """ filtering high angle lipids """
             dirc = head-tail;
             dirc /= np.linalg.norm(dirc);
-            #dirc /= np.sqrt(dirc[0]**2 + dirc[1]**2 + dirc[2]**2)
             if (np.fabs(dirc[2]) > 0.6):
                 bilayer.append(lipid(head,tail))
         
         self.bilayer = lipids(bilayer)
+        
+    def __del__(self):
+        self.lipids_x_file.close()
+        self.lipids_y_file.close()
+        self.lipids_z_file.close()
+        self.box_x_file.close()
+        self.box_z_file.close()
+        
        
             
