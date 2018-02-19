@@ -10,7 +10,9 @@ import argparse
 from memmoduli import clac_moduli
 
 def parse_command_line():
-    """ Add parameter to argparsers and return aggparse object """
+    """ 
+    Add parameter to argparsers and return aggparse object 
+    """
     
                           
     parse = argparse.ArgumentParser()
@@ -42,7 +44,7 @@ def parse_command_line():
                      help="grid size", type=int, required=True)
     #output file
     parse.add_argument("-o", "--output", 
-                     help="Number of frmaes",  default="out.mat")
+                     help="Outpu file name",  default="out")
      
     return parse
  

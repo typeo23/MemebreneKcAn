@@ -15,9 +15,11 @@ class Frame():
     def __init__(self,lipids_number,lipidx='LipidX.out',
                  lipidy='LipidY.out',lipidz='LipidZ.out'
                  ,boxx='boxsizeX.out',boxy='boxsizeY.out',boxz='boxsizeZ.out'):
-        """ Initialize a frame containing a lipid bilayer and box dimentions 
+        """ 
+        Initialize a frame containing a lipid bilayer and box dimentions 
         will be loaded from the files lipidx,y,z and box dimentiond will be 
-        loaded from boxx,y,z """
+        loaded from boxx,y,z 
+        """
         self.lipids_number = lipids_number
         self.lipids_x_file = open(lipidx,'r')
         self.lipids_y_file = open(lipidy,'r')
@@ -54,9 +56,9 @@ class Frame():
             tail=np.array(tail1)
             
             
-            """ filtering high angle lipids """
+            # filtering high angle lipids 
             dirc = head-tail;
-            dirc /= np.linalg.norm(dirc);
+            dirc /= np.sqrt(dirc[0]**2 + dirc[1]**2 + dirc[2]**2);
             if (np.fabs(dirc[2]) > 0.6):
                 bilayer.append(lipid(head,tail))
         

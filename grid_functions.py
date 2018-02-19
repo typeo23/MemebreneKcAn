@@ -30,7 +30,7 @@ def create_lipid_grid(lipids, M, L):
             l_ind += M
         if (l_ind >= M):
             l_ind -= M
-        direc = lipid.head - lipid.tail
+        #direc = lipid.head - lipid.tail
         grid[k_ind][l_ind].append(lipid)
     return grid
 
@@ -109,17 +109,12 @@ def create_director_grid(lipid_grid, M, L):
 
 def calc_director(lipids):
     """ calculaet the avrage director from a list of lipids in a patch """
-    lipid_num = len(lipids)
-    av_director = np.zeros(3)
-    for lipid in lipids:
-        av_director += lipid.dir
-    av_director /= lipid_num
-    return av_director
+    return np.mean([lipid.dir for lipid in lipids], axis=0)
 
-def create_normal_grid(lipid_grid, M, L, z_mean, q_grid):
-    """ Calculets the Normal field from the lipid_grid, z_mean is the mean
-    height if the lipid heads. q_grid is a grid of the corresponding grid 
-    wavenumbers
+def create_height_grid(lipid_grid, M, L, z_mean):
+    """ 
+    Calculets the height field from the lipid_grid, z_mean is the mean
+    height if the lipid heads. 
     //TODO: if we decide to keep it condier refactoring to all grid avraging 
     functions """
     #first calculate the hight field
@@ -128,15 +123,14 @@ def create_normal_grid(lipid_grid, M, L, z_mean, q_grid):
     for k_ind in range(M):
         for l_ind in range(M):
             if (len(lipid_grid[k_ind][l_ind])>0):
-                height_grid[k_ind,l_ind] = np.mean([z_pos for z_pos in 
-                                                  lipid_grid[k_ind][l_ind]]
-                                                  - z_mean)
+                height_grid[k_ind,l_ind] = np.mean(
+                                        [lipid.head[2] for lipid in 
+                                        lipid_grid[k_ind][l_ind]])- z_mean
             else:
                 empty_grid_points.append((k_ind, l_ind))
                 
-            height_grid = interpulate_grid(height_grid, empty_grid_points, M)
-            height_grid_q = fourier_trans_grid(height_grid,
-                                               M,L)
+    height_grid = interpulate_grid(height_grid, empty_grid_points, M)
+    return height_grid
                 
                 
 def interpulate_grid(grid, empty_grid_points,M):
@@ -233,40 +227,24 @@ def create_grid_qvalues(M, L):
 def fourier_trans_grid(grid_val_real, M, L):
     """
     Calculate the 2D FFT of grid_val_real.
-    FFTs are carried out separately on the x- and y-components 
-    of grid_val_real. Also remove the Nyquist components as they diverge
+    Remove the Nyquist components as they diverge
     """
-    n_q1 = np.fft.fft2( grid_val_real[:,:,0], norm = None )
-    n_q2 = np.fft.fft2( grid_val_real[:,:,1], norm = None )
-
+    n_q1 = np.fft.fft2(grid_val_real, norm = None )
+    
     # Remove areas of the grids, which correspond to wavenumbers with 
     #components corresponding to the Nyquist frequencies    
     if ( M % 2 == 0):
         n_q1 = np.delete(n_q1, M / 2, axis = 0)
         n_q1 = np.delete(n_q1, M / 2, axis = 1)
-
-        n_q2 = np.delete(n_q2, M / 2, axis = 0)
-        n_q2 = np.delete(n_q2, M / 2, axis = 1)  
+ 
 
     else:   # This statement should not be necessary as M should be even
         n_q1 = np.delete(n_q1, (M + 1) / 2, axis = 0)
         n_q1 = np.delete(n_q1, (M + 1) / 2, axis = 1)
         n_q1 = np.delete(n_q1, (M - 1) / 2, axis = 0)
         n_q1 = np.delete(n_q1, (M - 1) / 2, axis = 1)
-
-        n_q2 = np.delete(n_q2, (M + 1) / 2, axis = 0)
-        n_q2 = np.delete(n_q2, (M + 1) / 2, axis = 1)
-        n_q2 = np.delete(n_q2, (M - 1) / 2, axis = 0)
-        n_q2 = np.delete(n_q2, (M - 1) / 2, axis = 1)
-
-    siz1 = len(n_q1[0,:])
-    siz2 = len(n_q1[:,0])
-
-    n_q = np.zeros((siz1, siz2, 2), dtype=np.complex_)
-    n_q[:,:,0] = n_q1
-    n_q[:,:,1] = n_q2
                                          
-    return n_q
+    return n_q1
 
 def collect(n_q, w_grid, M,L):
     """
@@ -304,7 +282,8 @@ def collect(n_q, w_grid, M,L):
     w_grid_sum =  w_grid
     return n_pow_sum, w_grid_sum, n_comp
 
-def get_moduli(w_grid_av, n_trans_av, n_long_av, n_trans_c, n_long_c):
+def get_moduli(w_grid_av, n_trans_av, 
+               n_long_av, n_trans_c, n_long_c, height_f):
     """
     return a flattened set of unique wavenumbers and the corresponding grid 
     values for the longitudenal and transverse components
@@ -320,6 +299,8 @@ def get_moduli(w_grid_av, n_trans_av, n_long_av, n_trans_c, n_long_c):
     n_long_c = n_long_c.flatten()[1:]
     w_grid_mag = w_grid_mag.flatten()
     w_grid_mag=w_grid_mag[1:]
+    height_f = height_f.flatten()
+    height_f = height_f[1:]
 	
     # Sort the wavenumbers and then accordingly rearrange the other arrays
     sorted_indices = np.argsort(w_grid_mag)
@@ -328,6 +309,7 @@ def get_moduli(w_grid_av, n_trans_av, n_long_av, n_trans_c, n_long_c):
     sorted_n_long = n_long_av[sorted_indices]
     sorted_n_trans_c = n_trans_c[sorted_indices]
     sorted_n_long_c = n_long_c[sorted_indices]
+    sorted_heigh_f = height_f[sorted_indices]
 
     # Take the average of the data for each unique wavenumber
 
@@ -339,7 +321,7 @@ def get_moduli(w_grid_av, n_trans_av, n_long_av, n_trans_c, n_long_c):
     n_long_u = np.zeros(sorted_wavnum_u.size)
     n_trans_c = np.zeros(sorted_wavnum_u.size, dtype = np.complex_)
     n_tlong_c = np.zeros(sorted_wavnum_u.size, dtype = np.complex_)
-    
+    height_f_u = np.zeros(sorted_wavnum_u.size)
     for index in unique_ind:
         # Get boolean array of elements in which true elements correspond 
         #to the unique wavenumber
@@ -358,6 +340,9 @@ def get_moduli(w_grid_av, n_trans_av, n_long_av, n_trans_c, n_long_c):
 
         n_longc = np.compress(condlist, sorted_n_long_c)
         n_long_c[cnt] = np.mean(n_longc)
+        
+        height_f = np.compress(condlist,  sorted_heigh_f)
+        height_f_u[cnt] = np.mean(height_f)
 
         cnt +=1
 
@@ -367,6 +352,8 @@ def get_moduli(w_grid_av, n_trans_av, n_long_av, n_trans_c, n_long_c):
     n_trans_u *= 0.01      # Angstrom^2  -> nm^2
     n_long_c *= 0.01
     n_trans_c *= 0.01
+    height_f_u *= 0.01
 
-    return sorted_wavnum_u, n_long_u, n_trans_u, n_trans_c, n_long_c
+    return (sorted_wavnum_u, n_long_u, 
+            n_trans_u, n_trans_c, n_long_c, height_f_u)
 
