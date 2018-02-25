@@ -35,6 +35,8 @@ def clac_moduli(params):
     dir_all = np.zeros((M,M,3,number_of_blocks)) #array conating all the direcotr grids
     n_long=[] #lonitual director componants spectra
     n_trans=[] #tansverse director component spectra
+    t_long=[] #lonitual director componants spectra
+    t_trans=[] #tansverse director component spectra
     n_long_com=[]
     n_trans_com =[]
     s_wavenum = [] #flattned wavenumbers
@@ -104,13 +106,54 @@ def clac_moduli(params):
                                        M,test_frame.box_size[0])
             hf_q *= (box_size[0]/(M**2))/10
             hf_pow = np.square(np.absolute(hf_q))
+            
+           
+ # =============================================================================
+# Collecting the tilt spectra
+# =============================================================================         
+            #nx_up,ny_up = gf.create_normal_grid(
+            #        height_field_up, M,test_frame.box_size[0])
+            #nx_down,ny_down = gf.create_normal_grid(
+            #        height_field_down, M,test_frame.box_size[0])
+            #nx_up,ny_up = np.gradient(height_field_up,test_frame.box_size[0]/M)
+            #nx_down,ny_down = np.gradient(height_field_down,test_frame.box_size[0]/M)
+            
+            #nx_up *= M**2
+            #ny_up *= M**2
+            #nx_down *= M**2
+            #ny_down *= M**2
+            
+            nx,ny = gf.create_normal_grid(
+                    hf_av, M,test_frame.box_size[0])
+            #nx, ny = np.gradient(hf_av,test_frame.box_size[0]/M)
+# =============================================================================
+#             tiltx_up = director_grid_upper[:,:,0] - nx_up
+#             tilty_up = director_grid_upper[:,:,1] - ny_up
+#             tiltx_down = director_grid_lower[:,:,0] - nx_down
+#             tilty_down = director_grid_lower[:,:,1] - ny_down
+# =============================================================================
+            
+            tiltx = nx #0.5*(nx_up + nx_down)
+            tilty = ny #0.5*(ny_up + ny_down)
+            tqx =nx # gf.fourier_trans_grid(tiltx,
+#                                       M,test_frame.box_size[0])
+            tqy=ny # gf.fourier_trans_grid(tilty,
+    #                                  M,test_frame.box_size[0])
+            tq = np.zeros((tqx[0,:].size,tqx[:,0].size,2), dtype=np.complex_)
+            tq[:,:,0] = tqx
+            tq[:,:,1] = tqy
+            t_pow_sum, w_grid_sum2, t_comp = gf.collect(tq,q_grid,M,box_size[0])
             # and a 1D array containing the q values and correspondant logitudenal/
             # Transverse componants of the director field
-            sorted_wavenum_u, n_long_u, n_trans_u, n_long_c, n_trans_c, hf_u= (
+            sorted_wavenum_u, n_long_u, n_trans_u, n_long_c, n_trans_c, hf_u, tl , tp = (
                     gf.get_moduli(gridcoll,sumcoll[:,:,0],sumcoll[:,:,1],
-                                  n_comp[:,:,0], n_comp[:,:,1],hf_pow))
+                                  n_comp[:,:,0], n_comp[:,:,1],hf_pow,
+                                  t_pow_sum[:,:,0], t_pow_sum[:,:,1]))
+            tl = sorted_wavenum_u**2*hf_u - n_trans_u
             n_long.append(n_long_u)
             n_trans.append(n_trans_u)
+            t_long.append(tl)
+            t_trans.append(tp)
             n_long_com.append(n_long_c)
             n_trans_com.append(n_trans_c)
             s_wavenum.append(sorted_wavenum_u)
@@ -124,6 +167,8 @@ def clac_moduli(params):
     #converting to numpy matrices 
     trans = np.array(n_trans)
     long = np.array(n_long)
+    ttrans = np.array(t_trans)
+    tlong = np.array(t_long)
     long_c = np.array(n_long_com)
     trans_c = np.array(n_trans_com)
     hf = np.array(s_hf)
@@ -133,6 +178,10 @@ def clac_moduli(params):
                  'n_long_se': long.std(axis=0)/np.sqrt(number_of_frames),
                  'n_trans': trans.mean(axis=0),
                  'n_tans_se': trans.std(axis=0)/np.sqrt(number_of_frames),
+                 't_long': tlong.mean(axis=0),
+                 't_long_se': tlong.std(axis=0)/np.sqrt(number_of_frames),
+                 't_trans': ttrans.mean(axis=0),
+                 't_tans_se': ttrans.std(axis=0)/np.sqrt(number_of_frames),
                  'hf':np.mean(hf, axis=0)}
     scipy.io.savemat(params.output+'.mat', mdict=save_dict)
     #creating and saving pandas dataframe

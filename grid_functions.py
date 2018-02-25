@@ -133,6 +133,65 @@ def create_height_grid(lipid_grid, M, L, z_mean):
     return height_grid
                 
                 
+def create_normal_grid(height_grid,M,L):
+    """
+    Create the normal grid from the height grid (N = -iqh)
+    """
+    spacing = L / float(M)
+
+    q1 = 2*np.pi*np.fft.fftfreq(M, d=spacing)
+    q2 = 2*np.pi*np.fft.fftfreq(M, d=spacing)
+    #q1 = 1j*np.zeros(M)
+    #q1[0:int(M/2.0)] = np.arange(0, int(M/2.0), 1)
+    #q1[int(M/2)+1:] = np.arange(int(-M/2.0) + 1, 0, 1)
+    #q1 = (2*np.pi/L)*q1
+    
+    qx, qy = np.meshgrid(q2,q1)
+#    hq = np.fft.fft2(height_grid)
+#    norm_x = np.fft.ifft2(qx*hq)
+#    norm_y = np.fft.ifft2(qy*hq)
+    #normx = np.zeros((M,M), dtype=np.complex)
+    #normy = np.zeros((M,M), dtype=np.complex)
+    norm = 1 # L/M**2
+    twoPiLx = (2*np.pi)/L
+    hq = np.fft.fft2(height_grid)
+    #hq2 = np.fft.np.fft.rfft2(np.transpose(height_grid))
+    
+# =============================================================================
+#     for i in range(M):
+#         for j in range(M):
+#             if (i < M/2):
+#                 qx = i
+#             else:
+#                 qx = i-M
+#                 
+#             if (j < M/2):
+#                 qy = i
+#             else:
+#                 qy = i-M
+#                 
+#             if i == M/2:
+#                 qx =0
+#             if j == M/2:
+#                 qy = 0
+#             realx = -norm*q1[i]*hq[i][j].imag*twoPiLx
+#             imagx = norm*q1[i]*hq[i][j].real*twoPiLx
+#             normx[i][j] = realx + 1j*imagx
+#             
+#             realy = -norm*q1[j]*hq[i][j].imag*twoPiLx
+#             imagy = norm*q1[j]*hq[i][j].real*twoPiLx
+#             normy[i][j] = realy + 1j*imagy
+# =============================================================================
+            
+    normx = 1j*qx*hq
+    normy = 1j*qy*hq
+    #norm_x = np.fft.irfft2(normx)
+    #norm_y = np.transpose(np.fft.irfft2(normy))
+           
+    
+    return normx, normy
+    
+
 def interpulate_grid(grid, empty_grid_points,M):
     """ bi-linear interpulation for emty grid points. Assumes there are no
     two adjucnt empty patches"""
@@ -191,6 +250,9 @@ def normalize_grid(grid,M):
         for ind_y in range(M):
             if grid[ind_x, ind_y, 2] != 0:
                 grid[ind_x, ind_y] /= grid[ind_x, ind_y, 2]
+               # grid[ind_x, ind_y] /= np.sqrt(
+                #        grid[ind_x, ind_y, 0]**2+grid[ind_x, ind_y, 1]**2
+                #        + grid[ind_x, ind_y, 2]**2)
                 
 
 def create_grid_qvalues(M, L):
@@ -201,7 +263,14 @@ def create_grid_qvalues(M, L):
 
     wave_num1 = 2*np.pi*np.fft.fftfreq(M, d=spacing)
     wave_num2 = 2*np.pi*np.fft.fftfreq(M, d=spacing)
-
+    
+# =============================================================================
+#     q1 = np.zeros(M)
+#     q1[0:int(M/2.0)] = np.arange(0, int(M/2.0), 1)
+#     q1[int(M/2)+1:] = np.arange(int(-M/2.0) + 1, 0, 1)
+#     wave_num1 = (2*np.pi/L[0])*q1
+#     wave_num2 = (2*np.pi/L[0])*q1
+# =============================================================================
     # Remove the Nyquist frequencies
     if (M % 2 == 0):
         wave_num1 = np.delete(wave_num1, M / 2, None)
@@ -282,8 +351,9 @@ def collect(n_q, w_grid, M,L):
     w_grid_sum =  w_grid
     return n_pow_sum, w_grid_sum, n_comp
 
+
 def get_moduli(w_grid_av, n_trans_av, 
-               n_long_av, n_trans_c, n_long_c, height_f):
+               n_long_av, n_trans_c, n_long_c, height_f, t_long_av, t_trans_av):
     """
     return a flattened set of unique wavenumbers and the corresponding grid 
     values for the longitudenal and transverse components
@@ -295,6 +365,10 @@ def get_moduli(w_grid_av, n_trans_av,
     n_trans_av= n_trans_av[1:]
     n_long_av = n_long_av.flatten()
     n_long_av = n_long_av[1:]
+    t_trans_av = t_trans_av.flatten()
+    t_trans_av= t_trans_av[1:]
+    t_long_av = t_long_av.flatten()
+    t_long_av = t_long_av[1:]
     n_trans_c = n_trans_c.flatten()[1:]
     n_long_c = n_long_c.flatten()[1:]
     w_grid_mag = w_grid_mag.flatten()
@@ -307,6 +381,8 @@ def get_moduli(w_grid_av, n_trans_av,
     sorted_wavnum = w_grid_mag[sorted_indices]
     sorted_n_trans = n_trans_av[sorted_indices]
     sorted_n_long = n_long_av[sorted_indices]
+    sorted_t_trans = t_trans_av[sorted_indices]
+    sorted_t_long = t_long_av[sorted_indices]
     sorted_n_trans_c = n_trans_c[sorted_indices]
     sorted_n_long_c = n_long_c[sorted_indices]
     sorted_heigh_f = height_f[sorted_indices]
@@ -319,6 +395,8 @@ def get_moduli(w_grid_av, n_trans_av,
     cnt = 0
     n_trans_u = np.zeros(sorted_wavnum_u.size)
     n_long_u = np.zeros(sorted_wavnum_u.size)
+    t_trans_u = np.zeros(sorted_wavnum_u.size)
+    t_long_u = np.zeros(sorted_wavnum_u.size)
     n_trans_c = np.zeros(sorted_wavnum_u.size, dtype = np.complex_)
     n_tlong_c = np.zeros(sorted_wavnum_u.size, dtype = np.complex_)
     height_f_u = np.zeros(sorted_wavnum_u.size)
@@ -335,6 +413,12 @@ def get_moduli(w_grid_av, n_trans_av,
         n_long = np.compress(condlist, sorted_n_long)
         n_long_u[cnt] = np.mean(n_long)
         
+        t_trans = np.compress(condlist, sorted_t_trans)
+        t_trans_u[cnt] = np.mean(t_trans)
+
+        t_long = np.compress(condlist, sorted_t_long)
+        t_long_u[cnt] = np.mean(t_long)
+        
         n_transc = np.compress(condlist, sorted_n_trans_c)
         n_trans_c[cnt] = np.mean(n_transc)
 
@@ -350,10 +434,13 @@ def get_moduli(w_grid_av, n_trans_av,
     sorted_wavnum_u *= 10  # Angstrom^-1 -> nm^-1
     n_long_u *= 0.01       # Angstrom^2  -> nm^2
     n_trans_u *= 0.01      # Angstrom^2  -> nm^2
+    t_long_u *= 0.01       # Angstrom^2  -> nm^2
+    t_trans_u *= 0.01      # Angstrom^2  -> nm^2
     n_long_c *= 0.01
     n_trans_c *= 0.01
     height_f_u *= 0.01
 
     return (sorted_wavnum_u, n_long_u, 
-            n_trans_u, n_trans_c, n_long_c, height_f_u)
+            n_trans_u, n_trans_c, n_long_c, height_f_u, t_long_u, t_trans_u)
+
 
