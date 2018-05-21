@@ -8,8 +8,9 @@ A full simulation frame, contains a lipid bilayer and box dimentions
 Also contains routines to read a frame from a file
 """
 import numpy as np
-from Lipid_bilayer  import Lipid_bilayer as lipids
+from Lipid_bilayer  import LipidBilayer as lipids
 from Lipid_bilayer  import Lipid as lipid
+
 
 class Frame():
     def __init__(self,lipids_number,lipidx='LipidX.out',
@@ -27,16 +28,16 @@ class Frame():
         self.box_x_file = open(boxx,'r')
         self.box_y_file = open(boxy,'r')
         self.box_z_file = open(boxz,'r')
+        self.box_size = []
+        self.bilayer = None
         
     def load_next_frame(self):
         """ read the next frame of lipids from the file  """
-        bilayer = [];
-        self.box_size =[]
+        bilayer = []
         self.box_size.append(float(self.box_x_file.readline()))
         self.box_size.append(float(self.box_y_file.readline()))
         self.box_size.append(float(self.box_z_file.readline()))
-        
-        
+
         for lipid_num in range(self.lipids_number):
             head = []
             tail1 =[]
@@ -53,14 +54,13 @@ class Frame():
             tail1.append(float(self.lipids_z_file.readline())) 
 #            
                     
-            tail=np.array(tail1)
-            
-            
+            tail = np.array(tail1)
+
             # filtering high angle lipids 
-            dirc = head-tail;
-            dirc /= np.sqrt(dirc[0]**2 + dirc[1]**2 + dirc[2]**2);
-            if (np.fabs(dirc[2]) > 0.5):
-                bilayer.append(lipid(head,tail))
+            dirc = head-tail
+            dirc /= np.sqrt(dirc[0]**2 + dirc[1]**2 + dirc[2]**2)
+            if np.fabs(dirc[2] > 0.5):
+                bilayer.append(lipid(head, tail))
         
         self.bilayer = lipids(bilayer)
         
@@ -70,6 +70,3 @@ class Frame():
         self.lipids_z_file.close()
         self.box_x_file.close()
         self.box_z_file.close()
-        
-       
-            

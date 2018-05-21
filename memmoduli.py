@@ -15,6 +15,7 @@ import numpy as np
 import scipy.io
 import pandas as pd
 
+
 def clac_moduli(params):
     """ 
     Main loop for calculating the membrene moduli, set the parameters and 
@@ -22,9 +23,9 @@ def clac_moduli(params):
     """
     
     k_b = 1.38064852e-23 # Boltzmann constant	
-    T=313 #temperatue
+    T=313 # temperatue
     
-    #init the frmae with the approriate number of lipis
+    # init the frmae with the approriate number of lipis
     test_frame = frame(params.lipids)
     number_of_frames = params.frames
     number_of_blocks = 1
@@ -32,14 +33,14 @@ def clac_moduli(params):
     M=params.M
     
     # Accumulators
-    dir_all = np.zeros((M,M,3,number_of_blocks)) #array conating all the direcotr grids
-    n_long=[] #lonitual director componants spectra
-    n_trans=[] #tansverse director component spectra
-    t_long=[] #lonitual director componants spectra
-    t_trans=[] #tansverse director component spectra
+    dir_all = np.zeros((M,M,3,number_of_blocks)) # array conating all the direcotr grids
+    n_long=[] # lonitual director componants spectra
+    n_trans=[] # tansverse director component spectra
+    t_long=[] # lonitual director componants spectra
+    t_trans=[] # tansverse director component spectra
     n_long_com=[]
     n_trans_com =[]
-    s_wavenum = [] #flattned wavenumbers
+    s_wavenum = [] # flattned wavenumbers
     s_hf = [] # flatened height spectra
     
     # Begin the main loop on the number of blocks
@@ -67,16 +68,16 @@ def clac_moduli(params):
             # Director grid for the upper leaflet
             director_grid_upper = gf.create_director_grid(lipid_grid_upper,M, 
                                                     test_frame.box_size)
-            #Gridding lipids for the lower leflet
+            # Gridding lipids for the lower leflet
             lipid_grid_lower = gf.create_lipid_grid(test_frame.bilayer.lower,M, 
                                           test_frame.box_size)
-            #director grid for the lower leaflet
+            # director grid for the lower leaflet
             director_grid_lower = gf.create_director_grid(lipid_grid_lower,M, 
                                                      test_frame.box_size)
-            #Avragin the director fields 
+            # Avragin the director fields
             director_grid_av = 0.5*(director_grid_upper-director_grid_lower)
             
-            #Nomalizing the directos field (to Z=1)
+            # Nomalizing the directos field (to Z=1)
             gf.normalize_grid(director_grid_av,M)
             
             n_qx=gf.fourier_trans_grid(director_grid_av[:,:,0],
@@ -87,10 +88,10 @@ def clac_moduli(params):
                             n_qx[:,0].size, 2), dtype=np.complex_)
             n_q[:,:,0] = n_qx
             n_q[:,:,1] = n_qy
-            #collecting the spectra
+            # collecting the spectra
             n_pow_sum, w_grid_sum, n_comp = gf.collect(n_q,q_grid,M,box_size[0])
-            sumcoll = n_pow_sum #/frames_per_block
-            gridcoll = w_grid_sum #/frames_per_block
+            sumcoll = n_pow_sum # /frames_per_block
+            gridcoll = w_grid_sum # /frames_per_block
             
 # =============================================================================
 # Collecting the height spectra

@@ -14,10 +14,12 @@ class Lipid():
         self.head = head
         self.tail = tail
         self.dir = tail-head
-    def __rpr__(self):
+
+    def __repr__(self):
         return "<single lipid, contains head and tail vectors and director>"
 
-class Lipid_bilayer():
+
+class LipidBilayer():
     """ Class which contains all of the lipid information for a lipid bylayer 
     within a frame. """
     def __init__(self,lipids):
@@ -33,9 +35,7 @@ class Lipid_bilayer():
                                     for lipid in self.upper])
         self.mean_z_lower =  np.mean([lipid.head[2]
                                     for lipid in self.lower])
-       
-    
-    
+
     def devide_layers(self):
         """ Devide the lipids into two leaflets according the mean Z value of
         all the lipids """
@@ -46,6 +46,7 @@ class Lipid_bilayer():
             else:
                 if (lipid.head[2]-lipid.tail[2] < 0):
                     self.lower.append(lipid)
+
     def __repr__(self):
         st = "<lipid bilayer containig %d lipids>" % len(self.lipids)
         return st 
